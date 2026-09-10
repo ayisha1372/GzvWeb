@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gazva — Student Rankings</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .rankings-page { padding: 3rem 2rem 5rem; background: var(--off-white); }
+    .rankings-wrap { max-width: 900px; margin: 0 auto; }
+    .rankings-table { width: 100%; border-collapse: collapse; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .rankings-table th, .rankings-table td { padding: 1rem 1.25rem; text-align: left; font-size: 0.92rem; }
+    .rankings-table thead th { background: linear-gradient(135deg, var(--blue-deep), var(--blue-mid)); color: #fff; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .rankings-table tbody tr { border-top: 1px solid var(--border); transition: background 0.2s ease; }
+    .rankings-table tbody tr:hover { background: var(--off-white); }
+    .rank-pos { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--blue-deep); width: 2.5rem; }
+    .rank-pos.top1 { color: #c9a227; }
+    .rank-pos.top2 { color: #8a8f98; }
+    .rank-pos.top3 { color: #b5651d; }
+    .rank-points { font-weight: 700; color: var(--blue-mid); white-space: nowrap; }
+    .rank-dept { color: var(--blue-light); font-size: 0.85rem; }
+    .rank-achievements { color: #555; font-size: 0.85rem; }
+    .rankings-note { text-align: center; color: var(--blue-light); font-size: 0.85rem; margin-top: 1.5rem; }
+  </style>
+</head>
+<body>
+
+<main>
+
+  <div class="page-banner">
+    <h1>Student Rankings</h1>
+    <p>Recognising outstanding contribution and performance across Gazva</p>
+    <div class="breadcrumb">
+      <a href="home.html">Home</a><span>/</span><span>Rankings</span>
+    </div>
+  </div>
+
+  <div class="rankings-page">
+    <div class="rankings-wrap">
+      <div id="rankings-container">
+        <p class="loading-note">Loading rankings…</p>
+      </div>
+      <p class="rankings-note">Rankings are updated by the Gazva team based on participation, leadership, and achievement across events and departments.</p>
+    </div>
+  </div>
+
+</main>
+
+<script src="api.js"></script>
+<script src="components.js"></script>
+<script src="main.js"></script>
+<script>
+  (function () {
+    const container = document.getElementById('rankings-container');
+
+    function rowHTML(r, index) {
+      const pos = index + 1;
+      const posClass = pos === 1 ? 'top1' : pos === 2 ? 'top2' : pos === 3 ? 'top3' : '';
+      return `
+        <tr>
+          <td class="rank-pos ${posClass}">#${pos}</td>
+          <td>
+            <strong>${gazvaEscapeHTML(r.student_name)}</strong>
+            <div class="rank-dept">${gazvaEscapeHTML(r.department || '')}</div>
+          </td>
+          <td class="rank-achievements">${gazvaEscapeHTML(r.achievements || '—')}</td>
+          <td class="rank-points">${gazvaEscapeHTML(r.points)} pts</td>
+        </tr>`;
+    }
+
+    GazvaAPI.getRankings()
+      .then((rows) => {
+        if (!rows.length) {
+          container.innerHTML = '<p class="loading-note">Rankings will appear here once added in the admin panel.</p>';
+          return;
+        }
+        container.innerHTML = `
+          <table class="rankings-table">
+            <thead>
+              <tr><th>Rank</th><th>Student</th><th>Achievements</th><th>Points</th></tr>
+            </thead>
+            <tbody>${rows.map(rowHTML).join('')}</tbody>
+          </table>`;
+      })
+      .catch((err) => {
+        container.innerHTML = `<p class="loading-note">Couldn't load rankings (${gazvaEscapeHTML(err.message)}).</p>`;
+      });
+  })();
+</script>
+</body>
+</html>

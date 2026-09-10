@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery — Gazva Students' Union</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+
+    /* ── NAVBAR overrides ── */
+    .nav-links a[href="gallery.html"] { color: var(--plum-deep); background: var(--plum-pale); }
+
+    /* ── PAGE BANNER ── */
+    .gallery-banner {
+      background: linear-gradient(135deg, var(--plum-deep) 0%, var(--plum-mid) 100%);
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .gallery-banner::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 50%, rgba(255,255,255,0.04) 1px, transparent 1px),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 55px 55px;
+      pointer-events: none;
+    }
+    .gallery-banner .breadcrumb {
+      justify-content: center; margin-bottom: 1.2rem;
+      color: rgba(255,255,255,0.45); font-size: 0.8rem;
+    }
+    .gallery-banner .breadcrumb a { color: rgba(255,255,255,0.65); }
+    .gallery-banner h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      color: var(--white); font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+    .gallery-banner p {
+      color: rgba(255,255,255,0.65);
+      font-size: 1rem; max-width: 500px;
+      margin: 0 auto;
+    }
+    .banner-stats {
+      display: flex; gap: 2.5rem;
+      justify-content: center; margin-top: 2rem;
+    }
+    .banner-stat {
+      text-align: center;
+    }
+    .banner-stat strong {
+      display: block;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem; color: var(--white); line-height: 1;
+    }
+    .banner-stat span {
+      font-size: 0.75rem; color: rgba(255,255,255,0.5);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-top: 4px; display: block;
+    }
+
+    /* ── FILTER TABS ── */
+    .filter-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 72px; z-index: 90;
+    }
+    .filter-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 0 2rem;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      gap: 1rem; flex-wrap: wrap;
+      min-height: 60px;
+    }
+    .filter-tabs {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      padding: 10px 0;
+    }
+    .filter-tab {
+      padding: 0.4rem 1.1rem;
+      border-radius: 50px;
+      font-size: 0.82rem; font-weight: 500;
+      color: var(--text-soft);
+      border: 1.5px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+    .filter-tab:hover {
+      border-color: var(--rose-light);
+      color: var(--plum-mid);
+      background: var(--rose-pale);
+    }
+    .filter-tab.active {
+      background: var(--plum-deep);
+      color: var(--white);
+      border-color: var(--plum-deep);
+    }
+    .filter-search {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--off-white);
+      border: 1.5px solid var(--border);
+      border-radius: 8px; padding: 0.45rem 0.9rem;
+      transition: var(--transition);
+    }
+    .filter-search:focus-within {
+      border-color: var(--rose); background: var(--white);
+    }
+    .filter-search svg { width: 15px; height: 15px; color: var(--text-soft); flex-shrink: 0; }
+    .filter-search input {
+      border: none; background: transparent; outline: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem; color: var(--text-dark);
+      width: 180px;
+    }
+    .filter-search input::placeholder { color: var(--text-soft); }
+
+    /* ── LAYOUT TOGGLE ── */
+    .layout-toggle {
+      display: flex; gap: 4px;
+    }
+    .layout-btn {
+      width: 34px; height: 34px; border-radius: 7px;
+      border: 1.5px solid var(--border); background: transparent;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: var(--transition); color: var(--text-soft);
+    }
+    .layout-btn svg { width: 16px; height: 16px; }
+    .layout-btn.active {
+      background: var(--plum-pale); border-color: var(--plum-mist);
+      color: var(--plum-deep);
+    }
+    .filter-right { display: flex; align-items: center; gap: 10px; }
+
+    /* ── GALLERY GRID ── */
+    .gallery-section {
+      max-width: 1100px; margin: 0 auto;
+      padding: 2.5rem 2rem 5rem;
+    }
+    .results-info {
+      font-size: 0.82rem; color: var(--text-soft);
+      margin-bottom: 1.5rem;
+    }
+    .results-info span { color: var(--plum-mid); font-weight: 600; }
+
+    /* Masonry/grid */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+    .gallery-grid.layout-2 { grid-template-columns: repeat(2, 1fr); }
+    .gallery-grid.layout-list { grid-template-columns: 1fr; }
+
+    /* ── EVENT CARD ── */
+    .event-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+    .event-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-4px);
+      border-color: var(--rose-light);
+    }
+    .event-card.hidden { display: none; }
+
+    /* Image area */
+    .event-img-wrap {
+      position: relative;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      background: var(--plum-ghost);
+    }
+    .gallery-grid.layout-list .event-img-wrap {
+      aspect-ratio: 16/7;
+    }
+    .event-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .event-card:hover .event-img-wrap img { transform: scale(1.05); }
+
+    /* Photo placeholder when no image */
+    .event-img-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.75rem;
+      background: linear-gradient(135deg, var(--plum-pale), var(--rose-pale));
+      color: var(--plum-mist);
+    }
+    .event-img-placeholder svg { width: 48px; height: 48px; opacity: 0.5; }
+    .event-img-placeholder p { font-size: 0.78rem; opacity: 0.6; }
+
+    /* Category badge on image */
+    .event-badge {
+      position: absolute; top: 12px; left: 12px;
+      padding: 0.3rem 0.75rem;
+      border-radius: 50px; font-size: 0.68rem;
+      font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase;
+      backdrop-filter: blur(8px);
+    }
+    .badge-debate   { background: rgba(46,12,53,0.85);  color: #ecc5cb; }
+    .badge-cultural { background: rgba(212,148,158,0.9); color: var(--white); }
+    .badge-academic { background: rgba(74,31,85,0.85);   color: #ecc5cb; }
+    .badge-literary { background: rgba(109,93,110,0.85); color: var(--white); }
+    .badge-islamic  { background: rgba(46,12,53,0.9);    color: var(--rose-light); }
+    .badge-media    { background: rgba(212,148,158,0.85);color: var(--white); }
+    .badge-social   { background: rgba(74,31,85,0.8);    color: #ecc5cb; }
+
+    /* Image count badge */
+    .img-count {
+      position: absolute; top: 12px; right: 12px;
+      background: rgba(0,0,0,0.5);
+      color: white; font-size: 0.72rem; font-weight: 600;
+      padding: 0.25rem 0.6rem; border-radius: 50px;
+      display: flex; align-items: center; gap: 4px;
+      backdrop-filter: blur(6px);
+    }
+    .img-count svg { width: 12px; height: 12px; }
+
+    /* Card body */
+    .event-body { padding: 1.25rem 1.25rem 1.4rem; }
+    .event-meta {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 0.6rem; flex-wrap: wrap;
+    }
+    .event-date {
+      font-size: 0.75rem; color: var(--text-soft);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .event-date svg { width: 13px; height: 13px; }
+    .event-wing {
+      font-size: 0.7rem; font-weight: 600;
+      color: var(--rose); letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .event-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem; font-weight: 600;
+      color: var(--plum-deep); line-height: 1.35;
+      margin-bottom: 0.5rem;
+    }
+    .event-desc {
+      font-size: 0.84rem; color: var(--text-soft);
+      line-height: 1.65; margin-bottom: 0.9rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .event-footer {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+    .event-participants {
+      font-size: 0.75rem; color: var(--text-soft);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .event-participants svg { width: 13px; height: 13px; }
+    .event-view-btn {
+      font-size: 0.78rem; font-weight: 600;
+      color: var(--plum-mid); display: flex;
+      align-items: center; gap: 4px;
+      transition: var(--transition);
+    }
+    .event-view-btn svg { width: 14px; height: 14px; transition: transform 0.2s; }
+    .event-card:hover .event-view-btn svg { transform: translateX(3px); }
+
+    /* List layout adjustments */
+    .gallery-grid.layout-list .event-card {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+    }
+    .gallery-grid.layout-list .event-img-wrap { border-radius: 0; }
+    .gallery-grid.layout-list .event-body { padding: 1.75rem 2rem; }
+    .gallery-grid.layout-list .event-title { font-size: 1.2rem; }
+    .gallery-grid.layout-list .event-desc { -webkit-line-clamp: 3; }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      display: none;
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(20,5,24,0.94);
+      backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+      padding: 1.5rem;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox-inner {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      max-width: 900px; width: 100%;
+      max-height: 90vh;
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      position: relative;
+      animation: lbIn 0.3s ease;
+    }
+    @keyframes lbIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .lightbox-img {
+      background: var(--plum-ghost);
+      position: relative; overflow: hidden;
+    }
+    .lightbox-img img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+    .lightbox-img-placeholder {
+      width: 100%; height: 100%; min-height: 350px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 1rem; color: var(--plum-mist);
+      background: linear-gradient(135deg, var(--plum-pale), var(--rose-pale));
+    }
+    .lightbox-img-placeholder svg { width: 64px; height: 64px; opacity: 0.4; }
+    .lightbox-info {
+      padding: 2rem 1.75rem;
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+    }
+    .lb-badge {
+      display: inline-block; margin-bottom: 1rem;
+      padding: 0.3rem 0.9rem; border-radius: 50px;
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      background: var(--plum-pale); color: var(--plum-deep);
+    }
+    .lb-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.45rem; font-weight: 700;
+      color: var(--plum-deep); line-height: 1.3;
+      margin-bottom: 0.5rem;
+    }
+    .lb-wing {
+      font-size: 0.75rem; color: var(--rose);
+      font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 1rem;
+    }
+    .lb-desc {
+      font-size: 0.9rem; color: var(--text-mid);
+      line-height: 1.75; margin-bottom: 1.5rem;
+      flex: 1;
+    }
+    .lb-meta-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.75rem; margin-bottom: 1.5rem;
+    }
+    .lb-meta-item {
+      background: var(--off-white);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.7rem 0.9rem;
+    }
+    .lb-meta-item label {
+      display: block; font-size: 0.68rem;
+      font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text-soft);
+      margin-bottom: 3px;
+    }
+    .lb-meta-item span { font-size: 0.85rem; color: var(--text-dark); font-weight: 500; }
+    .lb-close {
+      position: absolute; top: 14px; right: 14px;
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(46,12,53,0.7); border: none;
+      color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition); z-index: 10;
+    }
+    .lb-close:hover { background: var(--plum-deep); }
+    .lb-close svg { width: 16px; height: 16px; }
+    .lb-nav {
+      position: absolute; bottom: 14px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 8px;
+    }
+    .lb-nav-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(46,12,53,0.6); border: none;
+      color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .lb-nav-btn:hover { background: var(--plum-deep); }
+    .lb-nav-btn svg { width: 16px; height: 16px; }
+
+    /* ── EMPTY STATE ── */
+    .gallery-empty {
+      display: none; text-align: center; padding: 5rem 2rem;
+    }
+    .gallery-empty.show { display: block; }
+    .gallery-empty svg { width: 56px; height: 56px; color: var(--plum-mist); margin: 0 auto 1rem; }
+    .gallery-empty h3 { font-family: 'Playfair Display', serif; color: var(--plum-deep); font-size: 1.3rem; margin-bottom: 0.5rem; }
+    .gallery-empty p { color: var(--text-soft); font-size: 0.9rem; }
+
+    /* ── UPLOAD HINT BANNER ── */
+    .upload-hint {
+      background: var(--plum-pale);
+      border: 1.5px dashed var(--plum-mist);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 2rem;
+      display: flex; align-items: center; gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .upload-hint svg { width: 32px; height: 32px; color: var(--plum-soft); flex-shrink: 0; }
+    .upload-hint h4 { font-size: 0.92rem; font-weight: 600; color: var(--plum-deep); margin-bottom: 3px; }
+    .upload-hint p { font-size: 0.82rem; color: var(--text-soft); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+      .gallery-grid.layout-list .event-card { grid-template-columns: 220px 1fr; }
+      .lightbox-inner { grid-template-columns: 1fr; max-height: 95vh; }
+      .lightbox-img { min-height: 260px; }
+      .lb-meta-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .gallery-grid,
+      .gallery-grid.layout-2,
+      .gallery-grid.layout-list { grid-template-columns: 1fr; }
+      .gallery-grid.layout-list .event-card { grid-template-columns: 1fr; }
+      .gallery-grid.layout-list .event-img-wrap { aspect-ratio: 16/9; border-radius: 0; }
+      .filter-right { width: 100%; justify-content: space-between; padding-bottom: 10px; }
+      .filter-inner { flex-direction: column; align-items: flex-start; }
+      .filter-search input { width: 130px; }
+      .banner-stats { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<main>
+
+  <!-- ═══════════════════════════════════════ BANNER ═══════════════════════════════════════ -->
+  <div class="gallery-banner">
+    <div class="breadcrumb">
+      <a href="home.html">Home</a>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <span>Gallery</span>
+    </div>
+    <h1>Event Gallery</h1>
+    <p>Moments, memories, and milestones from Gazva's journey across every year.</p>
+    <div class="banner-stats">
+      <div class="banner-stat">
+        <strong id="totalEvents">12</strong>
+        <span>Events</span>
+      </div>
+      <div class="banner-stat">
+        <strong>7</strong>
+        <span>Wings</span>
+      </div>
+      <div class="banner-stat">
+        <strong>2026</strong>
+        <span>Academic Year</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ FILTER BAR ═══════════════════════════════════════ -->
+  <div class="filter-bar">
+    <div class="filter-inner">
+      <div class="filter-tabs" id="filterTabs">
+        <button class="filter-tab active" data-filter="all">All Events</button>
+        <button class="filter-tab" data-filter="debate">Debates</button>
+        <button class="filter-tab" data-filter="cultural">Cultural</button>
+        <button class="filter-tab" data-filter="academic">Academic</button>
+        <button class="filter-tab" data-filter="literary">Literary</button>
+        <button class="filter-tab" data-filter="islamic">Islamic</button>
+        <button class="filter-tab" data-filter="media">Media</button>
+        <button class="filter-tab" data-filter="social">Social</button>
+      </div>
+      <div class="filter-right">
+        <div class="filter-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchInput" placeholder="Search events…">
+        </div>
+        <div class="layout-toggle">
+          <button class="layout-btn active" data-layout="grid3" title="3-column grid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="layout-btn" data-layout="grid2" title="2-column grid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="18"/><rect x="13" y="3" width="8" height="18"/></svg>
+          </button>
+          <button class="layout-btn" data-layout="list" title="List view">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ GALLERY ═══════════════════════════════════════ -->
+  <section class="gallery-section">
+
+    <!-- Upload hint -->
+    <div class="upload-hint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <div>
+        <h4>Add Event Photos</h4>
+        <p>Replace the placeholder images by adding your photo files (e.g. <code>event1.jpg</code>) in the same folder as this HTML file, then update the <code>src</code> attribute in each card's <code>&lt;img&gt;</code> tag.</p>
+      </div>
+    </div>
+
+    <p class="results-info">Showing <span id="visibleCount">12</span> events</p>
+
+    <div class="gallery-grid" id="galleryGrid">
+      <p class="loading-note" id="galleryLoading">Loading events…</p>
+    </div><!-- /gallery-grid -->
+
+    <!-- Empty state -->
+    <div class="gallery-empty" id="galleryEmpty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <h3>No events found</h3>
+      <p>Try a different filter or search term.</p>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- ═══════════════════════════════════════ LIGHTBOX ═══════════════════════════════════════ -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-inner">
+    <button class="lb-close" id="lbClose">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="lightbox-img" id="lbImg">
+      <img src="" alt="" id="lbImgEl" style="display:none">
+      <div class="lightbox-img-placeholder" id="lbImgPlaceholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <p style="font-size:.85rem;color:var(--plum-soft);">Add your event photo here</p>
+      </div>
+      <div class="lb-nav">
+        <button class="lb-nav-btn" id="lbPrev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="lb-nav-btn" id="lbNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+      </div>
+    </div>
+    <div class="lightbox-info">
+      <span class="lb-badge" id="lbBadge">Event</span>
+      <h2 class="lb-title" id="lbTitle">Event Title</h2>
+      <p class="lb-wing" id="lbWing">Wing Name</p>
+      <p class="lb-desc" id="lbDesc">Event description goes here.</p>
+      <div class="lb-meta-grid">
+        <div class="lb-meta-item"><label>Date</label><span id="lbDate">—</span></div>
+        <div class="lb-meta-item"><label>Participants</label><span id="lbParticipants">—</span></div>
+        <div class="lb-meta-item"><label>Organised by</label><span id="lbOrg">—</span></div>
+        <div class="lb-meta-item"><label>Category</label><span id="lbCat">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="main.js"></script>
+<script src="api.js"></script>
+<script src="components.js"></script>
+
+<!-- ═══════════════════════════════════════ SCRIPTS ═══════════════════════════════════════ -->
+<script>
+  // Nav scroll
+  const navbar = document.querySelector('.navbar');
+  window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 20));
+
+  // Mobile nav
+  document.getElementById('navToggle').addEventListener('click', function () {
+    document.querySelector('.nav-links').classList.toggle('open');
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+function initGallery() {
+    // ── FILTER & SEARCH ──
+    const cards      = Array.from(document.querySelectorAll('.event-card'));
+    const tabs       = document.querySelectorAll('.filter-tab');
+    const searchInput = document.getElementById('searchInput');
+    const emptyState  = document.getElementById('galleryEmpty');
+    const countEl     = document.getElementById('visibleCount');
+    let activeFilter  = 'all';
+
+    function applyFilters() {
+      const q = searchInput.value.toLowerCase().trim();
+      let visible = 0;
+      cards.forEach(card => {
+        const cat   = card.dataset.category;
+        const title = card.dataset.title.toLowerCase();
+        const wing  = card.dataset.wing.toLowerCase();
+        const matchCat  = activeFilter === 'all' || cat === activeFilter;
+        const matchSearch = !q || title.includes(q) || wing.includes(q) || card.dataset.desc.toLowerCase().includes(q);
+        const show = matchCat && matchSearch;
+        card.classList.toggle('hidden', !show);
+        if (show) visible++;
+      });
+      countEl.textContent = visible;
+      emptyState.classList.toggle('show', visible === 0);
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeFilter = tab.dataset.filter;
+        applyFilters();
+      });
+    });
+    searchInput.addEventListener('input', applyFilters);
+
+    // ── LAYOUT TOGGLE ──
+    const grid = document.getElementById('galleryGrid');
+    document.querySelectorAll('.layout-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        grid.className = 'gallery-grid';
+        if (btn.dataset.layout === 'grid2') grid.classList.add('layout-2');
+        if (btn.dataset.layout === 'list')  grid.classList.add('layout-list');
+      });
+    });
+
+    // ── LIGHTBOX ──
+    const lightbox = document.getElementById('lightbox');
+    const lbTitle  = document.getElementById('lbTitle');
+    const lbWing   = document.getElementById('lbWing');
+    const lbDesc   = document.getElementById('lbDesc');
+    const lbDate   = document.getElementById('lbDate');
+    const lbParts  = document.getElementById('lbParticipants');
+    const lbOrg    = document.getElementById('lbOrg');
+    const lbCat    = document.getElementById('lbCat');
+    const lbBadge  = document.getElementById('lbBadge');
+    const lbImgEl  = document.getElementById('lbImgEl');
+    const lbImgPh  = document.getElementById('lbImgPlaceholder');
+
+    let visibleCards = [];
+    let currentIdx   = 0;
+
+    function openLightbox(card) {
+      visibleCards = cards.filter(c => !c.classList.contains('hidden'));
+      currentIdx   = visibleCards.indexOf(card);
+      populateLightbox(card);
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function populateLightbox(card) {
+      const imgSrc = card.querySelector('.event-img-wrap img')?.src || '';
+      const imgOk  = card.querySelector('.event-img-wrap img')?.style.display !== 'none';
+      if (imgOk && imgSrc && !imgSrc.includes('undefined')) {
+        lbImgEl.src = imgSrc; lbImgEl.style.display = 'block'; lbImgPh.style.display = 'none';
+      } else {
+        lbImgEl.style.display = 'none'; lbImgPh.style.display = 'flex';
+      }
+      lbTitle.textContent = card.dataset.title;
+      lbWing.textContent  = card.dataset.wing;
+      lbDesc.textContent  = card.dataset.desc;
+      lbDate.textContent  = card.dataset.date;
+      lbParts.textContent = card.dataset.participants;
+      lbOrg.textContent   = card.dataset.wing;
+      lbCat.textContent   = card.dataset.category.charAt(0).toUpperCase() + card.dataset.category.slice(1);
+      lbBadge.textContent = lbCat.textContent;
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    cards.forEach(card => card.addEventListener('click', () => openLightbox(card)));
+    document.getElementById('lbClose').addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+
+    document.getElementById('lbPrev').addEventListener('click', e => {
+      e.stopPropagation();
+      currentIdx = (currentIdx - 1 + visibleCards.length) % visibleCards.length;
+      populateLightbox(visibleCards[currentIdx]);
+    });
+    document.getElementById('lbNext').addEventListener('click', e => {
+      e.stopPropagation();
+      currentIdx = (currentIdx + 1) % visibleCards.length;
+      populateLightbox(visibleCards[currentIdx]);
+    });
+
+    // Keyboard nav
+    document.addEventListener('keydown', e => {
+      if (!lightbox.classList.contains('open')) return;
+      if (e.key === 'Escape')     closeLightbox();
+      if (e.key === 'ArrowLeft')  { currentIdx = (currentIdx - 1 + visibleCards.length) % visibleCards.length; populateLightbox(visibleCards[currentIdx]); }
+      if (e.key === 'ArrowRight') { currentIdx = (currentIdx + 1) % visibleCards.length; populateLightbox(visibleCards[currentIdx]); }
+    });
+
+}
+
+function eventCardHTML(ev) {
+  const cat = (ev.category || 'general').toLowerCase();
+  const badgeLabel = cat.charAt(0).toUpperCase() + cat.slice(1);
+  const img = ev.image_url
+    ? `<img src="${gazvaEscapeHTML(ev.image_url)}" alt="${gazvaEscapeHTML(ev.title)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    : '';
+  return `
+    <div class="event-card fade-up" data-category="${gazvaEscapeHTML(cat)}" data-title="${gazvaEscapeHTML(ev.title)}" data-wing="${gazvaEscapeHTML(ev.wing || '')}" data-date="${gazvaEscapeHTML(ev.event_date || '')}" data-desc="${gazvaEscapeHTML(ev.description || '')}" data-participants="${gazvaEscapeHTML(ev.participants || '')}" data-img="${gazvaEscapeHTML(ev.image_url || '')}">
+      <div class="event-img-wrap">
+        ${img}
+        <div class="event-img-placeholder" style="${ev.image_url ? 'display:none' : ''}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <p>No photo yet</p>
+        </div>
+        <span class="event-badge badge-${gazvaEscapeHTML(cat)}">${gazvaEscapeHTML(badgeLabel)}</span>
+      </div>
+      <div class="event-body">
+        <div class="event-meta"><span class="event-wing">${gazvaEscapeHTML(ev.wing || '')}</span></div>
+        <h3 class="event-title">${gazvaEscapeHTML(ev.title)}</h3>
+        <p class="event-desc">${gazvaEscapeHTML(ev.description || '')}</p>
+        <div class="event-footer">
+          <span class="event-participants">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            ${gazvaEscapeHTML(ev.participants || '')}
+          </span>
+          <span class="event-date">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            ${gazvaEscapeHTML(ev.event_date || '')}
+          </span>
+          <span class="event-view-btn">View <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </div>
+      </div>
+    </div>`;
+}
+
+GazvaAPI.getEvents()
+  .then((events) => {
+    const grid = document.getElementById('galleryGrid');
+    if (!events.length) {
+      grid.innerHTML = '<p class="loading-note">Events will appear here once added in the admin panel.</p>';
+      return;
+    }
+    grid.innerHTML = events.map(eventCardHTML).join('');
+    document.querySelectorAll('.fade-up').forEach((el) => observer.observe(el));
+    initGallery();
+  })
+  .catch((err) => {
+    document.getElementById('galleryGrid').innerHTML = `<p class="loading-note">Couldn't load events (${gazvaEscapeHTML(err.message)}).</p>`;
+  });
+</script>
+
+</body>
+</html>

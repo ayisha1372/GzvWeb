@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gazva — Core Committee</title>
+  <link rel="stylesheet" href="style.css"/>
+
+</head>
+<body>
+
+<main>
+
+  <!-- Banner -->
+  <div class="page-banner">
+    <h1>Core Committee</h1>
+    <p>The leadership hierarchy of Gazva Students Union</p>
+    <div class="breadcrumb">
+      <a href="home.html">Home</a>
+      <span>/</span>
+      <span>Core Committee</span>
+    </div>
+  </div>
+
+  <!-- ===== CORE COMMITTEE ===== -->
+  <section class="section section-alt" id="core">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-eyebrow">Leadership</p>
+        <h2 class="section-title">Core Committee</h2>
+      </div>
+ 
+      <div id="core-committee-rows">
+        <p class="loading-note">Loading core committee…</p>
+      </div>
+</div>
+  </section>
+<script src="api.js"></script>
+<script src="components.js"></script>
+<script src="main.js"></script>
+<script>
+  (function () {
+    const container = document.getElementById('core-committee-rows');
+
+    function cardHTML(m, size) {
+      const img = m.image_url
+        ? `<img src="${gazvaEscapeHTML(m.image_url)}" alt="${gazvaEscapeHTML(m.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>`
+        : '';
+      return `
+        <div class="pyramid-card${size === 'featured' ? ' featured' : ''}">
+          <div class="pyramid-img-wrap${size === 'sm' ? ' sm' : ''}">
+            ${img}
+            <div class="pyramid-img-fallback" style="${m.image_url ? '' : 'display:flex'}">${gazvaAvatarSVG()}</div>
+          </div>
+          ${size === 'featured' ? `<span class="pyramid-badge">${gazvaEscapeHTML(m.role)}</span>` : ''}
+          <h3>${gazvaEscapeHTML(m.name)}</h3>
+          ${size === 'featured' ? '' : `<p class="pyramid-role">${gazvaEscapeHTML(m.role)}</p>`}
+        </div>`;
+    }
+
+    GazvaAPI.getMembers('core')
+      .then((members) => {
+        if (!members.length) {
+          container.innerHTML = '<p class="loading-note">Core committee members will appear here once added in the admin panel.</p>';
+          return;
+        }
+        const featured = members.slice(0, 1);
+        const row2 = members.slice(1, 4);
+        const row3 = members.slice(4);
+
+        container.innerHTML = `
+          <div class="pyramid-row">${featured.map((m) => cardHTML(m, 'featured')).join('')}</div>
+          ${row2.length ? `<div class="pyramid-row">${row2.map((m) => cardHTML(m)).join('')}</div>` : ''}
+          ${row3.length ? `<div class="pyramid-row">${row3.map((m) => cardHTML(m, 'sm')).join('')}</div>` : ''}
+        `;
+      })
+      .catch((err) => {
+        container.innerHTML = `<p class="loading-note">Couldn't load core committee (${gazvaEscapeHTML(err.message)}).</p>`;
+      });
+  })();
+</script>
+</body>
+</html>

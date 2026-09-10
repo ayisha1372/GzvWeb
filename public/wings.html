@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gazva — Wings</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .wings-page { padding: 3rem 2rem 5rem; background: var(--off-white); }
+    .wing-block { max-width: 1100px; margin: 0 auto 2.5rem; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .wing-header {background: linear-gradient(135deg, var(--blue-deep), var(--blue-mid));padding: 1.5rem 2rem;display: flex;align-items: center;}
+   .wing-title {
+    flex: 1;
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    color: var(--white);
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.wing-body {
+    padding: 2rem;
+}
+    .row-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-soft); font-weight: 600; margin-bottom: 0.75rem; margin-top: 1.25rem; }
+    .row-label:first-child { margin-top: 0; }
+    .member-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.5rem; }
+    .member-row.centered { justify-content: center; }
+    .member-card { background: var(--off-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem 0.75rem; text-align: center; width: 120px; transition: all 0.3s ease; }
+    .member-card:hover { background: var(--white); box-shadow: 0 8px 24px rgba(10,42,92,0.1); transform: translateY(-2px); }
+    
+    .member-name { font-size: 0.78rem; font-weight: 600; color: var(--blue-deep); margin-bottom: 0.2rem; }
+    .member-pos { font-size: 0.68rem; color: var(--blue-light); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+    .member-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.member-row.centered {
+    justify-content: center;
+}
+
+.sub-block {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: var(--blue-ghost);
+    border-radius: var(--radius);
+    border: 1px solid var(--blue-pale);
+    text-align: center;
+}
+
+.sub-block-title {
+    font-size: 1.2rem;   /* Increase size */
+    font-weight: 800;    /* Extra bold */
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--blue-mid);
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+
+    .clubs-grid { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.75rem; }
+    .club-item { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; }
+    .club-item-name { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--blue-mid); margin-bottom: 0.75rem; }
+    .wing-divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+    .avatar-svg { width: 30px; height: 30px; }
+  </style>
+</head>
+<body>
+
+<main>
+
+  <div class="page-banner">
+    <h1>Wings</h1>
+    <p>The departments and clubs that power Gazva's mission</p>
+    <div class="breadcrumb">
+      <a href="home.html">Home</a><span>/</span><span>Wings</span>
+    </div>
+  </div>
+
+  <div class="wings-page">
+    <div id="wing-blocks">
+      <p class="loading-note">Loading wings…</p>
+    </div>
+  </div><!-- /wings-page -->
+
+</main>
+
+<script src="api.js"></script>
+<script src="components.js"></script>
+<script src="main.js"></script>
+<script>
+  (function () {
+    const container = document.getElementById('wing-blocks');
+
+    function memberCardHTML(m) {
+      const img = m.image_url
+        ? `<img src="${gazvaEscapeHTML(m.image_url)}" alt="${gazvaEscapeHTML(m.name)}" onerror="this.style.display='none'"/>`
+        : gazvaAvatarSVG();
+      return `
+        <div class="member-card">
+          <div class="member-avatar">${img}</div>
+          <div class="member-name">${gazvaEscapeHTML(m.name)}</div>
+          <div class="member-pos">${gazvaEscapeHTML(m.role)}</div>
+        </div>`;
+    }
+
+    function wingBlockHTML(groupName, members) {
+      return `
+        <div class="wing-block fade-up">
+          <div class="wing-header"><div class="wing-title">${gazvaEscapeHTML(groupName)}</div></div>
+          <div class="wing-body">
+            <div class="member-row centered">${members.map(memberCardHTML).join('')}</div>
+          </div>
+        </div>`;
+    }
+
+    GazvaAPI.getMembers('wing')
+      .then((members) => {
+        if (!members.length) {
+          container.innerHTML = '<p class="loading-note">Wings will appear here once added in the admin panel.</p>';
+          return;
+        }
+        const groups = GazvaAPI.groupBy(members, 'group_name');
+        container.innerHTML = Object.keys(groups).map((g) => wingBlockHTML(g, groups[g])).join('');
+        document.querySelectorAll('.fade-up').forEach((el) => el.classList.add('visible'));
+      })
+      .catch((err) => {
+        container.innerHTML = `<p class="loading-note">Couldn't load wings (${gazvaEscapeHTML(err.message)}).</p>`;
+      });
+  })();
+</script>
+</body>
+</html>
