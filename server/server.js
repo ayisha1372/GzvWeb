@@ -11,6 +11,7 @@ const memberRoutes = require('./routes/members');
 const eventRoutes = require('./routes/events');
 const rankingRoutes = require('./routes/rankings');
 const contactRoutes = require('./routes/contact');
+const uploadRoutes = require('./routes/uploads');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -24,19 +25,15 @@ app.use('/api/members', memberRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/rankings', rankingRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/uploads', uploadRoutes);
 
 app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
-// ---- Admin panel ----
-app.get(['/admin', '/admin/'], (req, res) => {
+
+// ---- Static frontend (the whole public/ folder, including /admin) ----
+app.use(express.static(path.join(__dirname, '..', 'public')));
+app.get('/admin/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'admin', 'admin.html'));
 });
-
-// ---- Static frontend (the whole public/ folder, including /admin) ----
-app.use(express.static(path.join(__dirname, '..', 'public')));
-
-// ---- Static frontend (the whole public/ folder, including /admin) ----
-app.use(express.static(path.join(__dirname, '..', 'public')));
-
 // Fallback: serve index.html for unknown non-API GET routes (nice URLs)
 app.get('*', (req, res, next) => {
   if (req.path.startsWith('/api/')) return next();

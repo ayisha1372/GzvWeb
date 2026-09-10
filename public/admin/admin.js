@@ -279,7 +279,7 @@ const FORM_CONFIG = {
       { key: 'group_name', label: 'Group / Department / Wing name (leave blank for Core)', type: 'text' },
       { key: 'name', label: 'Name', type: 'text', required: true },
       { key: 'role', label: 'Role / Position', type: 'text' },
-      { key: 'image_url', label: 'Image URL (optional)', type: 'text' },
+      { key: 'image_url', label: 'Image', type: 'image' },
       { key: 'sort_order', label: 'Sort order (lower = first)', type: 'number', default: 0 },
     ],
   },
@@ -292,7 +292,7 @@ const FORM_CONFIG = {
       { key: 'wing', label: 'Organizing wing/committee', type: 'text' },
       { key: 'event_date', label: 'Date (e.g. "March 2026")', type: 'text' },
       { key: 'participants', label: 'Participants (e.g. "60+ participants")', type: 'text' },
-      { key: 'image_url', label: 'Image URL (optional)', type: 'text' },
+      { key: 'image_url', label: 'Image', type: 'image' },
       { key: 'description', label: 'Description', type: 'textarea' },
       { key: 'sort_order', label: 'Sort order', type: 'number', default: 0 },
     ],
@@ -335,12 +335,114 @@ function openForm(type, id) {
       if (f.type === 'textarea') {
         return `<div class="form-group"><label>${f.label}</label><textarea name="${f.key}">${esc(value)}</textarea></div>`;
       }
+      if (f.type === 'image') {
+        return `
+          <div class="form-group image-upload-group">
+            <label>${f.label} (optional)</label>
+            <div class="image-upload-box">
+              <input type="hidden" name="${f.key}" value="${esc(value)}"/>
+              <div class="image-upload-row">
+                <input type="file" name="image_file" class="image-file-input" accept="image/jpeg,image/png,image/webp,image/gif,image/avif"/>
+                <button type="button" class="btn-outline image-upload-btn">Choose Image</button>
+              </div>
+              <small class="image-upload-help">JPG, PNG, WEBP, GIF or AVIF · max 5 MB</small>
+              <input type="url" name="image_url_input" class="image-url-input" value="${esc(value)}" placeholder="Or paste an image URL" autocomplete="off"/>
+              <div class="image-preview-wrap" ${value ? '' : 'style="display:none"'}>
+                <img class="image-preview" src="${esc(value)}" alt="Image preview" onerror="this.parentElement.style.display='none'"/>
+              </div>
+              <button type="button" class="image-clear-btn" ${value ? '' : 'style="display:none"'}>Remove image</button>
+            </div>
+          </div>`;
+      }
       return `<div class="form-group"><label>${f.label}</label><input type="${f.type}" name="${f.key}" value="${esc(value)}" ${f.required ? 'required' : ''}/></div>`;
     })
     .join('');
 
   document.getElementById('modalFields').innerHTML = fieldsHTML;
   document.getElementById('formModal').style.display = 'flex';
+  wireImageField();
+}
+
+function wireImageField() {
+  const fileInput = document.querySelector('#modalFields .image-file-input');
+  const chooseBtn = document.querySelector('#modalFields .image-upload-btn');
+  const urlInput = document.querySelector('#modalFields .image-url-input');
+  const hiddenInput = document.querySelector('#modalFields input[type="hidden"][name="image_url"]');
+  const previewWrap = document.querySelector('#modalFields .image-preview-wrap');
+  const preview = document.querySelector('#modalFields .image-preview');
+  const clearBtn = document.querySelector('#modalFields .image-clear-btn');
+  if (!fileInput || !chooseBtn || !urlInput || !hiddenInput) return;
+
+  chooseBtn.addEventListener('click', () => fileInput.click());
+
+  const setPreview = (url) => {
+    if (!previewWrap || !preview) return;
+    if (!url) {
+      previewWrap.style.display = 'none';
+      preview.removeAttribute('src');
+      if (clearBtn) clearBtn.style.display = 'none';
+      return;
+    }
+    preview.src = url;
+    previewWrap.style.display = 'block';
+    if (clearBtn) clearBtn.style.display = 'inline-block';
+  };
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) return;
+    urlInput.value = '';
+    setPreview(URL.createObjectURL(file));
+  });
+
+  urlInput.addEventListener('input', () => {
+    if (fileInput.files && fileInput.files.length) fileInput.value = '';
+    const url = urlInput.value.trim();
+    hiddenInput.value = url;
+    setPreview(url);
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      urlInput.value = '';
+      hiddenInput.value = '';
+      setPreview('');
+    });
+  }
+}
+
+async function uploadSelectedImage() {
+  const fileInput = document.querySelector('#modalFields .image-file-input');
+  const hiddenInput = document.querySelector('#modalFields input[type="hidden"][name="image_url"]');
+  if (!fileInput || !hiddenInput || !fileInput.files || !fileInput.files[0]) {
+    return hiddenInput ? hiddenInput.value.trim() : '';
+  }
+
+  const file = fileInput.files[0];
+  if (!file.type.startsWith('image/')) throw new Error('Please select a valid image file.');
+  if (file.size > 5 * 1024 * 1024) throw new Error('Image must be 5 MB or smaller.');
+
+  const data = new FormData();
+  data.append('image', file);
+
+  const res = await fetch('/api/uploads/image', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${getToken()}` },
+    body: data,
+  });
+
+  if (res.status === 401) {
+    clearToken();
+    showLogin('Your session expired. Please log in again.');
+    throw new Error('Session expired');
+  }
+
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || `Image upload failed (${res.status}).`);
+
+  hiddenInput.value = body.url || '';
+  return hiddenInput.value;
 }
 
 function closeForm() {
@@ -362,6 +464,9 @@ document.getElementById('entityForm').addEventListener('submit', async (e) => {
   const payload = {};
   config.fields.forEach((f) => {
     let val = formData.get(f.key);
+    if (f.type === 'image') {
+      val = formData.get('image_url') || '';
+    }
     if (f.type === 'number') val = val === '' ? 0 : Number(val);
     payload[f.key] = val;
   });
@@ -370,6 +475,10 @@ document.getElementById('entityForm').addEventListener('submit', async (e) => {
   saveBtn.disabled = true;
   saveBtn.textContent = 'Saving…';
   try {
+    if (config.fields.some((f) => f.type === 'image')) {
+      payload.image_url = await uploadSelectedImage();
+    }
+
     if (editingId) {
       await authedFetch(`${config.endpoint}/${editingId}`, { method: 'PUT', body: JSON.stringify(payload) });
     } else {
