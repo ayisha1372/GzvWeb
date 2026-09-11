@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gazva — Admin Panel</title>
+  <link rel="stylesheet" href="admin.css"/>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen" class="login-screen">
+  <form id="loginForm" class="login-card">
+    <img src="../gazvalogo.png" alt="Gazva" class="login-logo" onerror="this.style.display='none'"/>
+    <h1>Gazva Admin</h1>
+    <p class="login-sub">Sign in to manage members, events, rankings &amp; messages.</p>
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" autocomplete="username" required/>
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" autocomplete="current-password" required/>
+    </div>
+    <p id="loginError" class="error-text" style="display:none"></p>
+    <button type="submit" class="btn-primary" id="loginBtn">Sign In</button>
+  </form>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboard" class="dashboard" style="display:none">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="../gazvalogo.png" alt="Gazva" onerror="this.style.display='none'"/>
+      <span>Gazva Admin</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-tab="members">Members</button>
+      <button class="nav-item" data-tab="events">Events</button>
+      <button class="nav-item" data-tab="rankings">Rankings</button>
+      <button class="nav-item" data-tab="messages">Messages <span id="unreadBadge" class="badge" style="display:none">0</span></button>
+    </nav>
+    <button id="logoutBtn" class="btn-outline logout-btn">Log Out</button>
+  </aside>
+
+  <main class="main-panel">
+
+    <!-- MEMBERS TAB -->
+    <section id="tab-members" class="tab-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Members</h2>
+          <p class="panel-sub">Core committee, department, and wing members shown on the site.</p>
+        </div>
+        <button class="btn-primary" data-open-form="member">+ Add Member</button>
+      </div>
+      <div class="filter-row">
+        <select id="memberCategoryFilter">
+          <option value="">All categories</option>
+          <option value="core">Core</option>
+          <option value="department">Department</option>
+          <option value="wing">Wing</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Category</th><th>Group</th><th>Role</th><th>Order</th><th></th></tr></thead>
+          <tbody id="membersBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- EVENTS TAB -->
+    <section id="tab-events" class="tab-panel" style="display:none">
+      <div class="panel-header">
+        <div>
+          <h2>Events</h2>
+          <p class="panel-sub">Events shown on the Events / Gallery page.</p>
+        </div>
+        <button class="btn-primary" data-open-form="event">+ Add Event</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Title</th><th>Category</th><th>Wing</th><th>Date</th><th>Order</th><th></th></tr></thead>
+          <tbody id="eventsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- RANKINGS TAB -->
+    <section id="tab-rankings" class="tab-panel" style="display:none">
+      <div class="panel-header">
+        <div>
+          <h2>Student Rankings</h2>
+          <p class="panel-sub">Leaderboard shown on the Rankings page — highest points first.</p>
+        </div>
+        <button class="btn-primary" data-open-form="ranking">+ Add Entry</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Student</th><th>Department</th><th>Term</th><th>Points</th><th>Achievements</th><th></th></tr></thead>
+          <tbody id="rankingsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MESSAGES TAB -->
+    <section id="tab-messages" class="tab-panel" style="display:none">
+      <div class="panel-header">
+        <div>
+          <h2>Contact Messages</h2>
+          <p class="panel-sub">Messages submitted through the site's contact form.</p>
+        </div>
+      </div>
+      <div id="messagesList" class="messages-list"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== GENERIC FORM MODAL ===== -->
+<div id="formModal" class="modal-backdrop" style="display:none">
+  <form id="entityForm" class="modal-card">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add</h3>
+      <button type="button" id="modalClose" class="modal-close">&times;</button>
+    </div>
+    <div id="modalFields" class="modal-fields"></div>
+    <p id="formError" class="error-text" style="display:none"></p>
+    <div class="modal-footer">
+      <button type="button" class="btn-outline" id="modalCancel">Cancel</button>
+      <button type="submit" class="btn-primary" id="modalSave">Save</button>
+    </div>
+  </form>
+</div>
+
+<script src="../api.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

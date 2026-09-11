@@ -22,13 +22,13 @@ router.get('/', (req, res) => {
 
 // POST /api/members  (admin)
 router.post('/', requireAuth, (req, res) => {
-  const { category, group_name = null, name, role = '', image_url = '', sort_order = 0 } = req.body || {};
+  const { category, group_name = null, subgroup = null, name, role = '', image_url = '', sort_order = 0 } = req.body || {};
   if (!VALID_CATEGORIES.includes(category) || !name) {
     return res.status(400).json({ error: 'category (core|department|wing) and name are required.' });
   }
   const info = db
-    .prepare('INSERT INTO members (category, group_name, name, role, image_url, sort_order) VALUES (?,?,?,?,?,?)')
-    .run(category, group_name, name, role, image_url, sort_order);
+    .prepare('INSERT INTO members (category, group_name, subgroup, name, role, image_url, sort_order) VALUES (?,?,?,?,?,?,?)')
+    .run(category, group_name, subgroup, name, role, image_url, sort_order);
   res.status(201).json(db.prepare('SELECT * FROM members WHERE id = ?').get(info.lastInsertRowid));
 });
 
@@ -40,6 +40,7 @@ router.put('/:id', requireAuth, (req, res) => {
   const {
     category = existing.category,
     group_name = existing.group_name,
+    subgroup = existing.subgroup,
     name = existing.name,
     role = existing.role,
     image_url = existing.image_url,
@@ -47,8 +48,8 @@ router.put('/:id', requireAuth, (req, res) => {
   } = req.body || {};
 
   db.prepare(
-    'UPDATE members SET category=?, group_name=?, name=?, role=?, image_url=?, sort_order=? WHERE id=?'
-  ).run(category, group_name, name, role, image_url, sort_order, req.params.id);
+    'UPDATE members SET category=?, group_name=?, subgroup=?, name=?, role=?, image_url=?, sort_order=? WHERE id=?'
+  ).run(category, group_name, subgroup, name, role, image_url, sort_order, req.params.id);
 
   res.json(db.prepare('SELECT * FROM members WHERE id = ?').get(req.params.id));
 });

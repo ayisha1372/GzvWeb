@@ -8,42 +8,115 @@ const db = require('./db');
 const memberCount = db.prepare('SELECT COUNT(*) AS c FROM members').get().c;
 if (memberCount === 0) {
   const insert = db.prepare(`
-    INSERT INTO members (category, group_name, name, role, image_url, sort_order)
-    VALUES (@category, @group_name, @name, @role, @image_url, @sort_order)
+    INSERT INTO members (category, group_name, subgroup, name, role, image_url, sort_order)
+    VALUES (@category, @group_name, @subgroup, @name, @role, @image_url, @sort_order)
   `);
 
   const rows = [
     // ---- Core Committee ----
-    { category: 'core', group_name: null, name: 'Zahra Mehthab', role: 'President', image_url: '', sort_order: 1 },
-    { category: 'core', group_name: null, name: 'Fathima Sana', role: 'Vice President', image_url: '', sort_order: 2 },
-    { category: 'core', group_name: null, name: 'Liya Shahma', role: 'General Secretary', image_url: '', sort_order: 3 },
-    { category: 'core', group_name: null, name: 'Fathwima Suhaila', role: 'Joint Secretary', image_url: '', sort_order: 4 },
-    { category: 'core', group_name: null, name: 'Asna NT', role: 'Programme Secretary', image_url: '', sort_order: 5 },
-    { category: 'core', group_name: null, name: 'Fathima Nafla', role: 'Finance Secretary', image_url: '', sort_order: 6 },
-    { category: 'core', group_name: null, name: 'Fathima Rifa PE', role: 'PRO', image_url: '', sort_order: 7 },
-    { category: 'core', group_name: null, name: 'Fidha Fathima AP', role: 'Media', image_url: '', sort_order: 8 },
-    { category: 'core', group_name: null, name: 'Ayisha', role: 'Media', image_url: '', sort_order: 9 },
-    { category: 'core', group_name: null, name: 'Hisana', role: 'Media', image_url: '', sort_order: 10 },
+    { category: 'core', group_name: null, subgroup: null, name: 'Zahra Mehthab', role: 'President', image_url: '', sort_order: 1 },
+    { category: 'core', group_name: null, subgroup: null, name: 'Fathima Sana', role: 'Vice President', image_url: '', sort_order: 2 },
+    { category: 'core', group_name: null, subgroup: null, name: 'Liya Shahma', role: 'General Secretary', image_url: '', sort_order: 3 },
+    { category: 'core', group_name: null, subgroup: null, name: 'Fathwima Suhaila', role: 'Joint Secretary', image_url: '', sort_order: 4 },
+    { category: 'core', group_name: null, subgroup: null, name: 'Asna NT', role: 'Programme Secretary', image_url: '', sort_order: 5 },
+    { category: 'core', group_name: null, subgroup: null, name: 'Fathima Nafla', role: 'Finance Secretary', image_url: '', sort_order: 6 },
+    { category: 'core', group_name: null, subgroup: null, name: 'Fathima Rifa PE', role: 'PRO', image_url: '', sort_order: 7 },
+    { category: 'core', group_name: null, subgroup: null, name: 'Fidha Fathima AP', role: 'Media', image_url: '', sort_order: 8 },
+    { category: 'core', group_name: null, subgroup: null, name: 'Ayisha', role: 'Media', image_url: '', sort_order: 9 },
+    { category: 'core', group_name: null, subgroup: null, name: 'Hisana', role: 'Media', image_url: '', sort_order: 10 },
 
     // ---- Departments (placeholders from the original file - edit in admin) ----
-    { category: 'department', group_name: 'Fiqh and Usul al Fiqh', name: 'Add member name', role: 'Chairperson', image_url: '', sort_order: 1 },
-    { category: 'department', group_name: 'Fiqh and Usul al Fiqh', name: 'Add member name', role: 'Vice Chairperson', image_url: '', sort_order: 2 },
-    { category: 'department', group_name: 'Fiqh and Usul al Fiqh', name: 'Add member name', role: 'Secretary', image_url: '', sort_order: 3 },
-    { category: 'department', group_name: 'Quran and Related Science', name: 'Add member name', role: 'Chairperson', image_url: '', sort_order: 1 },
-    { category: 'department', group_name: 'Quran and Related Science', name: 'Add member name', role: 'Vice Chairperson', image_url: '', sort_order: 2 },
-
-    // ---- Wings ----
-    { category: 'wing', group_name: 'Media Wing', name: 'Add member name', role: 'Coordinator', image_url: '', sort_order: 1 },
-    { category: 'wing', group_name: 'Editorial Board', name: 'Add member name', role: 'Editor', image_url: '', sort_order: 1 },
-    { category: 'wing', group_name: 'Library Board', name: 'Add member name', role: 'Coordinator', image_url: '', sort_order: 1 },
-    { category: 'wing', group_name: 'PKV', name: 'Add member name', role: 'Coordinator', image_url: '', sort_order: 1 },
-    { category: 'wing', group_name: 'SRDP', name: 'Add member name', role: 'Coordinator', image_url: '', sort_order: 1 },
-    { category: 'wing', group_name: 'Gazva Debates', name: 'Add member name', role: 'Coordinator', image_url: '', sort_order: 1 },
+    { category: 'department', group_name: 'Fiqh and Usul al Fiqh', subgroup: null, name: 'Add member name', role: 'Chairperson', image_url: '', sort_order: 1 },
+    { category: 'department', group_name: 'Fiqh and Usul al Fiqh', subgroup: null, name: 'Add member name', role: 'Vice Chairperson', image_url: '', sort_order: 2 },
+    { category: 'department', group_name: 'Fiqh and Usul al Fiqh', subgroup: null, name: 'Add member name', role: 'Secretary', image_url: '', sort_order: 3 },
+    { category: 'department', group_name: 'Quran and Related Science', subgroup: null, name: 'Add member name', role: 'Chairperson', image_url: '', sort_order: 1 },
+    { category: 'department', group_name: 'Quran and Related Science', subgroup: null, name: 'Add member name', role: 'Vice Chairperson', image_url: '', sort_order: 2 },
   ];
 
   const insertMany = db.transaction((items) => items.forEach((r) => insert.run(r)));
   insertMany(rows);
   console.log(`Seeded ${rows.length} members.`);
+}
+
+// ---------------------------------------------------------------------
+// Wings: enforce the official 7-wing organizational structure.
+// Runs once — if the "wing" members already match the new structure
+// (no old wing names present), it does nothing and leaves your edits
+// alone. If it detects the old placeholder structure (or no wings at
+// all), it rebuilds the 7 wings with the correct leadership slots and
+// sub-units as empty "Add member name" placeholders, ready to edit in
+// the admin panel.
+// ---------------------------------------------------------------------
+const OLD_WING_NAMES = ['Gazva Debates', 'Library Board', 'PKV'];
+const existingWingGroups = db
+  .prepare("SELECT DISTINCT group_name FROM members WHERE category = 'wing'")
+  .all()
+  .map((r) => r.group_name);
+const wingCount = db.prepare("SELECT COUNT(*) AS c FROM members WHERE category = 'wing'").get().c;
+const hasOldStructure = existingWingGroups.some((g) => OLD_WING_NAMES.includes(g));
+
+if (wingCount === 0 || hasOldStructure) {
+  const insertWing = db.prepare(`
+    INSERT INTO members (category, group_name, subgroup, name, role, image_url, sort_order)
+    VALUES ('wing', @group_name, @subgroup, @name, @role, @image_url, @sort_order)
+  `);
+
+  const P = 'Add member name'; // placeholder name, edit in admin panel
+
+  const wingRows = [
+    // 01 — Organizing Committee
+    { group_name: 'Organizing Committee', subgroup: null, name: P, role: 'Chairperson', image_url: '', sort_order: 1 },
+    { group_name: 'Organizing Committee', subgroup: null, name: P, role: 'Convener', image_url: '', sort_order: 2 },
+    { group_name: 'Organizing Committee', subgroup: null, name: P, role: 'Convener', image_url: '', sort_order: 3 },
+
+    // 02 — Islamic Information Cell
+    { group_name: 'Islamic Information Cell', subgroup: null, name: P, role: 'Chairperson', image_url: '', sort_order: 1 },
+    { group_name: 'Islamic Information Cell', subgroup: null, name: P, role: 'Convener', image_url: '', sort_order: 2 },
+    { group_name: 'Islamic Information Cell', subgroup: null, name: P, role: 'Convener', image_url: '', sort_order: 3 },
+
+    // 03 — Prasanga Kala Vedi (+ Speaker's Forum sub-unit)
+    { group_name: 'Prasanga Kala Vedi', subgroup: null, name: P, role: 'Chairperson', image_url: '', sort_order: 1 },
+    { group_name: 'Prasanga Kala Vedi', subgroup: null, name: P, role: 'Convener', image_url: '', sort_order: 2 },
+    { group_name: 'Prasanga Kala Vedi', subgroup: null, name: P, role: 'Convener', image_url: '', sort_order: 3 },
+    { group_name: 'Prasanga Kala Vedi', subgroup: "Speaker's Forum", name: P, role: 'General Secretary', image_url: '', sort_order: 1 },
+    { group_name: 'Prasanga Kala Vedi', subgroup: "Speaker's Forum", name: P, role: 'Joint Secretary', image_url: '', sort_order: 2 },
+
+    // 04 — Media Wing
+    { group_name: 'Media Wing', subgroup: null, name: P, role: 'Chairperson', image_url: '', sort_order: 1 },
+    { group_name: 'Media Wing', subgroup: null, name: P, role: 'Convener', image_url: '', sort_order: 2 },
+    { group_name: 'Media Wing', subgroup: null, name: P, role: 'Convener', image_url: '', sort_order: 3 },
+
+    // 05 — Editorial Board
+    { group_name: 'Editorial Board', subgroup: null, name: P, role: 'Chairperson', image_url: '', sort_order: 1 },
+    { group_name: 'Editorial Board', subgroup: null, name: P, role: 'Convener', image_url: '', sort_order: 2 },
+    { group_name: 'Editorial Board', subgroup: null, name: P, role: 'Convener', image_url: '', sort_order: 3 },
+
+    // 06 — Gazva Debate (single Chairperson + 4 debate sub-units)
+    { group_name: 'Gazva Debate', subgroup: null, name: P, role: 'Chairperson', image_url: '', sort_order: 1 },
+    ...['Nadi Munazara', 'Urdu Debate', 'British Parliamentary', 'Samvata Samiti'].flatMap((club, i) => [
+      { group_name: 'Gazva Debate', subgroup: club, name: P, role: 'General Secretary', image_url: '', sort_order: 1 },
+      { group_name: 'Gazva Debate', subgroup: club, name: P, role: 'Joint Secretary', image_url: '', sort_order: 2 },
+    ]),
+
+    // 07 — SRDP (+ 7 clubs)
+    { group_name: 'SRDP', subgroup: null, name: P, role: 'Chairperson', image_url: '', sort_order: 1 },
+    { group_name: 'SRDP', subgroup: null, name: P, role: 'Convener', image_url: '', sort_order: 2 },
+    { group_name: 'SRDP', subgroup: null, name: P, role: 'Convener', image_url: '', sort_order: 3 },
+    ...[
+      'English Club', 'Malayalam Club', 'Urdu Club', 'Arabic Club',
+      'Science and Maths Club', 'Translation Club', 'Art Club',
+    ].flatMap((club) => [
+      { group_name: 'SRDP', subgroup: club, name: P, role: 'General Secretary', image_url: '', sort_order: 1 },
+      { group_name: 'SRDP', subgroup: club, name: P, role: 'Joint Secretary', image_url: '', sort_order: 2 },
+    ]),
+  ];
+
+  const rebuildWings = db.transaction((rows) => {
+    db.prepare("DELETE FROM members WHERE category = 'wing'").run();
+    rows.forEach((r) => insertWing.run(r));
+  });
+  rebuildWings(wingRows);
+  console.log(`Rebuilt the 7-wing structure (${wingRows.length} placeholder slots).`);
 }
 
 const eventCount = db.prepare('SELECT COUNT(*) AS c FROM events').get().c;

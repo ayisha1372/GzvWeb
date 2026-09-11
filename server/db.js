@@ -13,6 +13,7 @@ db.exec(`
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     category    TEXT NOT NULL CHECK (category IN ('core','department','wing')),
     group_name  TEXT,            -- department or wing name; NULL for core
+    subgroup    TEXT,            -- optional club name within a wing (e.g. "Debate Club")
     name        TEXT NOT NULL,
     role        TEXT,
     image_url   TEXT,
@@ -59,6 +60,15 @@ db.exec(`
     password_hash TEXT NOT NULL
   );
 `);
+
+// ---------------------------------------------------------------------
+// Migration: older databases created before "subgroup" existed
+// ---------------------------------------------------------------------
+try {
+  db.exec('ALTER TABLE members ADD COLUMN subgroup TEXT');
+} catch (e) {
+  // Column already exists - safe to ignore
+}
 
 // ---------------------------------------------------------------------
 // Ensure an admin account exists (from .env, created once)
