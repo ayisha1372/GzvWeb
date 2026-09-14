@@ -15,7 +15,7 @@
       <span class="nav-name">Gazva</span>
     </div>
     <ul class="nav-links">
-      <li><a href="home.html">Home</a></li>
+      <li><a href="index.html">Home</a></li>
       <li><a href="core.html">Core</a></li>
       <li><a href="wings.html">Wings</a></li>
       <li><a href="department.html">Departments</a></li>
@@ -51,7 +51,7 @@
       <div class="footer-col">
         <h4>Quick Links</h4>
         <ul>
-          <li><a href="home.html">Home</a></li>
+          <li><a href="index.html">Home</a></li>
           <li><a href="core.html">Core Committee</a></li>
           <li><a href="wings.html">Wings</a></li>
           <li><a href="department.html">Departments</a></li>
